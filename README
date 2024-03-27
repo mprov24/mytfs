@@ -1,0 +1,31 @@
+Name: Matthew Province
+
+Basic implementation:
+    - All essential functions should be working, as well as hierarchical directories
+    - When a function is used incorrectly and causes a return value of an error number, a message will print to stdout on what caused that error
+    - Free blocks are implemented as a chain of blocks for ease of getting and creating free blocks, as well as reducing external fragmentation
+    - The superblock contains the maximum block size of the file system, so that tfs_mount can verify all blocks
+    - inodes contain direct indexes to file extent blocks so that all file data can be quickly accessed
+    - The superblock and root inode are required blocks since the filesystem is hierarchical with the root as the starting point
+    - The mounted disk and file table are static global variables since many functions rely on them
+    - The open file table dynamically grows by increments of 100 entries and is deallocated upon tfs_unmount() for unlimited opens
+    - Opening a file multiple times will create new open file entries and new file descriptors, but will point to the same inode on the disk. This is so users can use unique file descriptors
+    - tfs_deleteFile will delete an inode and all the data associated with it, setting them as free. This is so no blocks are lost
+    - Seeking past the end of the file is allowed, but reading past EOF will return an errno
+
+Additional features:
+    - Hierarchical directories (20%) working
+    - Directory listing and file renaming (10%) working
+
+    - Inodes have a byte for if they are a directory or not. If it is a directory, direct blocks point to other inodes, otherwise they point to file extent blocks
+    - All paths and names are absolute paths, except tfs_rename because it is just setting the 8 name bytes in an inode block
+    - All paths can optionally start with "/" to maintain backwards compatibility with tfs_open which does not require an initial "/"
+    - tfs_removeDir will not remove nonempty directories, since this would require recursively deleting
+    - tfs_removeAll deletes a directory and everything under it. tfs_removeAll("/") will delete all blocks except the root inode and superblock which are required
+    - tfs_readdir recursively prints all file paths and then directory paths for ease of viewing. (f) indicates a file and (d) indicates a directory
+
+All interface functions were tested in tinyFSDemo.c
+
+Limitations:
+    - Making and mounting tinyFS requires a size of 2 blocks to 255 blocks. Two blocks are needed for the superblock and root inode, more than 255 blocks would require more than 1 byte to index other blocks
+    - You cannot open a directory as a file descriptor or rename a directory because the writing and reading logic would have to change
